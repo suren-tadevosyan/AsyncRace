@@ -1,9 +1,9 @@
-// src/services/api.ts
+
 
 import axios from "axios";
 import { Car } from "../types/types";
 
-const API_BASE_URL = "http://localhost:3000"; // Assuming the server is running on localhost:3000
+const API_BASE_URL = "http://localhost:3000"; 
 
 export const getCars = async (): Promise<Car[]> => {
   const response = await axios.get(`${API_BASE_URL}/garage`);

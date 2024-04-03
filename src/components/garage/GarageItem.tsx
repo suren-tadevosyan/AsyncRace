@@ -1,4 +1,4 @@
-// src/components/garage/GarageItem.tsx
+
 
 import React, { useState } from "react";
 import { Car } from "../../types/types";

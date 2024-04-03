@@ -1,4 +1,3 @@
-// src/components/garage/AddCarForm.tsx
 
 import React, { useState } from 'react';
 
@@ -8,13 +7,13 @@ interface AddCarFormProps {
 
 const AddCarForm: React.FC<AddCarFormProps> = ({ onSubmit }) => {
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#000000'); // Default color: black
+  const [color, setColor] = useState('#000000'); 
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit(name, color);
-    setName(''); // Reset input fields after submission
-    setColor('#000000'); // Reset color picker after submission
+    setName(''); 
+    setColor('#000000'); 
   };
 
   return (
