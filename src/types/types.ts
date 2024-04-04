@@ -3,5 +3,7 @@ export interface Car {
   name: string;
   color: string;
   image: string;
-  engineStatus: string; 
+  engineStatus: string;
+  velocity?: number; // Optional property for velocity
+  distance?: number;
 }

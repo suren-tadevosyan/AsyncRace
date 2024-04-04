@@ -71,7 +71,7 @@ server.patch("/engine", (req, res) => {
       .send("Car with such id was not found in the garage.");
   }
 
-  const distance = 500000;
+  const distance = 500;
 
   if (status === STATUS.DRIVE) {
     const velocity = state.velocity[id];
