@@ -49,7 +49,7 @@ const STATUS = {
 };
 
 server.patch("/engine", (req, res) => {
-  const { id, status } = req.query;
+  const { id, status, width } = req.query;
 
   if (!id || Number.isNaN(+id) || +id <= 0) {
     return res
@@ -71,7 +71,8 @@ server.patch("/engine", (req, res) => {
       .send("Car with such id was not found in the garage.");
   }
 
-  const distance = 500;
+  const distance = width;
+  console.log(distance);
 
   if (status === STATUS.DRIVE) {
     const velocity = state.velocity[id];

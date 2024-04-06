@@ -10,10 +10,11 @@ export const getCars = async (): Promise<Car[]> => {
 
 export const updateEngineStatus = async (
   id: number,
-  status: string
+  status: string,
+  width: number,
 ): Promise<Car> => {
   const response = await axios.patch(
-    `${API_BASE_URL}/engine?id=${id}&status=${status}`
+    `${API_BASE_URL}/engine?id=${id}&status=${status}&width=${width}`
   );
   return response.data;
 };
