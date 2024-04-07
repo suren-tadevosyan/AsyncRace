@@ -14,6 +14,17 @@ interface CarPositions {
 }
 
 const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const carsPerPage: number = 10;
+
+ 
+  const indexOfLastCar: number = currentPage * carsPerPage;
+  const indexOfFirstCar: number = indexOfLastCar - carsPerPage;
+  const currentCars: Car[] = cars.slice(indexOfFirstCar, indexOfLastCar);
+
+ 
+  const paginate = (pageNumber: number): void => setCurrentPage(pageNumber);
+
   const [carPositions, setCarPositions] = useState<{
     [key: number]: { position: number; duration: number };
   }>({});
@@ -72,7 +83,7 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
   const resetPositions = () => {
     const updatedPositions: CarPositions = {};
     for (const car of cars) {
-      updatedPositions[car.id] = { position: 0, duration: 0 }; 
+      updatedPositions[car.id] = { position: 0, duration: 0 };
     }
     setCarPositions(updatedPositions);
   };
@@ -105,7 +116,17 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
         </button>
       </div>
       <div>
-        {cars.map((car) => (
+        {/* Pagination buttons */}
+        {Array.from({ length: Math.ceil(cars.length / carsPerPage) }).map(
+          (_, index) => (
+            <button key={index} onClick={() => paginate(index + 1)}>
+              {index + 1}
+            </button>
+          )
+        )}
+      </div>
+      <div>
+        {currentCars.map((car) => (
           <div key={car.id} className="flex items-center mb-4">
             {/* Car Select and Remove Button */}
             <div className="flex flex-col gap-1">

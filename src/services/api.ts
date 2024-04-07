@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Car } from "../types/types";
+import getRandomCars from "../components/garage/GenerateCars";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -11,7 +12,7 @@ export const getCars = async (): Promise<Car[]> => {
 export const updateEngineStatus = async (
   id: number,
   status: string,
-  width: number,
+  width: number
 ): Promise<Car> => {
   const response = await axios.patch(
     `${API_BASE_URL}/engine?id=${id}&status=${status}&width=${width}`
@@ -27,6 +28,12 @@ export const createCar = async (car: Partial<Car>): Promise<Car> => {
 export const addCar = async (newCar: Partial<Car>): Promise<Car> => {
   const response = await axios.post(`${API_BASE_URL}/garage`, newCar);
   return response.data;
+};
+
+export const addRandomCars = async (count: number): Promise<Car[]> => {
+  const randomCars = getRandomCars(count);
+  const promises = randomCars.map((car) => addCar(car));
+  return Promise.all(promises);
 };
 
 export const updateCar = async (

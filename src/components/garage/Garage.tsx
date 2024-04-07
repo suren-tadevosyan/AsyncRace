@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddCarForm from "./AddCarForm";
 import { Car } from "../../types/types";
-import { getCars, addCar } from "../../services/api";
+import { getCars, addCar, addRandomCars } from "../../services/api";
 import CarList from "./CarList";
 
 const GarageView: React.FC = () => {
@@ -34,10 +34,21 @@ const GarageView: React.FC = () => {
     setCars(updatedCars);
   };
 
+  const handleAddRandomCars = async () => {
+    try {
+      const randomCars = await addRandomCars(100); 
+      setCars([...cars, ...randomCars]);
+      console.log("Random cars added:", randomCars);
+    } catch (error) {
+      console.error("Error adding random cars:", error);
+    }
+  };
+
   return (
     <div className="bg-gray-800">
       <h2>Garage</h2>
-      <AddCarForm onSubmit={handleSubmit} /> 
+      <AddCarForm onSubmit={handleSubmit} />
+      <button onClick={handleAddRandomCars}>Add 100 Random Cars</button>
       <div>
         <CarList cars={cars} updateCarsState={updateCarsState} />
       </div>
