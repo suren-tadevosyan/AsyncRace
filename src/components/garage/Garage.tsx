@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import AddCarForm from "./AddCarForm";
 import { Car } from "../../types/types";
 import { getCars, addCar, addRandomCars } from "../../services/api";
@@ -30,13 +30,9 @@ const GarageView: React.FC = () => {
     }
   };
 
-  const updateCarsState = (updatedCars: Car[]) => {
-    setCars(updatedCars);
-  };
-
   const handleAddRandomCars = async () => {
     try {
-      const randomCars = await addRandomCars(100); 
+      const randomCars = await addRandomCars(100);
       setCars([...cars, ...randomCars]);
       console.log("Random cars added:", randomCars);
     } catch (error) {
@@ -45,12 +41,12 @@ const GarageView: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800">
+    <div className="bg-gray-800 min-h-screen h-full">
       <h2>Garage</h2>
       <AddCarForm onSubmit={handleSubmit} />
       <button onClick={handleAddRandomCars}>Add 100 Random Cars</button>
       <div>
-        <CarList cars={cars} updateCarsState={updateCarsState} />
+        <CarList cars={cars} updateCarsState={setCars} />
       </div>
     </div>
   );

@@ -1,13 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Car } from "../../types/types";
-import { deleteCar, updateEngineStatus } from "../../services/api";
+import { deleteCar, updateCar, updateEngineStatus } from "../../services/api";
 
 import SportsCarIcon from "./CarIconSVG";
 import { motion } from "framer-motion";
+import { handleToggleEngine } from "../../utils/toggleEngine";
+import EditCarForm from "./UpdateCar";
 
 interface CarListProps {
   cars: Car[];
-  updateCarsState: (updatedCars: Car[]) => void;
+  updateCarsState: Dispatch<SetStateAction<Car[]>>;
 }
 interface CarPositions {
   [key: string]: { position: number; duration: number };
@@ -15,14 +23,13 @@ interface CarPositions {
 
 const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const carsPerPage: number = 10;
+  const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
+  const carsPerPage: number = 7;
 
- 
   const indexOfLastCar: number = currentPage * carsPerPage;
   const indexOfFirstCar: number = indexOfLastCar - carsPerPage;
   const currentCars: Car[] = cars.slice(indexOfFirstCar, indexOfLastCar);
 
- 
   const paginate = (pageNumber: number): void => setCurrentPage(pageNumber);
 
   const [carPositions, setCarPositions] = useState<{
@@ -30,47 +37,19 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
   }>({});
   const carRef = useRef<HTMLDivElement>(null);
 
-  const handleToggleEngine = async (carId: number, isEngineOn: boolean) => {
-    const newStatus = isEngineOn ? "stopped" : "started";
-    const rawWidth = carRef.current
-      ? carRef.current.getBoundingClientRect().width
-      : 0;
-    const divWidth = rawWidth - 100 >= 0 ? rawWidth - 100 : 0;
-    console.log(divWidth);
-    await updateEngineStatus(carId, newStatus, divWidth);
-
-    const updatedCars = cars.map((car) =>
-      car.id === carId ? { ...car, engineStatus: newStatus } : car
+  const handleToggleEngineWrapper = async (
+    carId: number,
+    isEngineOn: boolean
+  ) => {
+    await handleToggleEngine(
+      carId,
+      isEngineOn,
+      carRef,
+      carPositions,
+      cars,
+      updateCarsState,
+      setCarPositions
     );
-
-    updateCarsState(updatedCars);
-
-    const response = await updateEngineStatus(carId, newStatus, divWidth);
-    const updatedVelocity = response.velocity;
-    const distance = Number(response.distance);
-
-    console.log(updatedVelocity);
-    if (updatedVelocity) {
-      const scalingFactor = 0.4;
-      const animationDuration =
-        (distance && distance * scalingFactor) / updatedVelocity;
-      console.log(distance);
-
-      console.log(animationDuration);
-
-      const newPosition = carPositions[carId]
-        ? carPositions[carId].position + (distance || 0)
-        : distance || 0;
-      setCarPositions((prevCarPositions) => ({
-        ...prevCarPositions,
-        [carId]: {
-          position: newPosition,
-          duration: animationDuration || 0,
-        },
-      }));
-    } else {
-      delete carPositions[carId];
-    }
   };
 
   const handleRemoveCar = async (carId: number) => {
@@ -82,26 +61,62 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
 
   const resetPositions = () => {
     const updatedPositions: CarPositions = {};
+    const updatedCars: Car[] = cars.map((car) => ({
+      ...car,
+      engineStatus:
+        car.engineStatus === "started" ? "stopped" : car.engineStatus,
+    }));
+
     for (const car of cars) {
       updatedPositions[car.id] = { position: 0, duration: 0 };
     }
+
     setCarPositions(updatedPositions);
+    updateCarsState(updatedCars);
   };
 
   const raceAll = async () => {
     const startEnginePromises = [];
+    const updatedCars: Car[] = [];
 
-    for (const car of cars) {
-      startEnginePromises.push(handleToggleEngine(car.id, false));
+    for (const car of currentCars) {
+      startEnginePromises.push(handleToggleEngineWrapper(car.id, false));
+      updatedCars.push({ ...car, engineStatus: "started" });
     }
 
     await Promise.all(startEnginePromises);
+    updateCarsState((prevCars) =>
+      prevCars.map(
+        (car) =>
+          updatedCars.find((updatedCar) => updatedCar.id === car.id) || car
+      )
+    );
+  };
+  const handleSelectCar = (carId: number) => {
+    setSelectedCarId(carId === selectedCarId ? null : carId);
+  };
+
+  const handleSubmit = async (carId: number, name: string, color: string) => {
+    try {
+      const updatedCar = await updateCar(carId, { name, color });
+      
+      const updatedCars = cars.map((car) => (car.id === updatedCar.id ? updatedCar : car));
+      updateCarsState(updatedCars);
+    } catch (error) {
+      console.error("Error updating car:", error);
+    }
   };
 
   return (
     <div>
       <h2 className="text-lg font-bold mb-4">Car List</h2>
-      <div>
+      <EditCarForm
+        carId={selectedCarId || 0}
+        initialName={cars.find((car) => car.id === selectedCarId)?.name || ""}
+        initialColor={cars.find((car) => car.id === selectedCarId)?.color || ""}
+        onSubmit={handleSubmit}
+      />
+      <div className="flex justify-center gap-10">
         <button
           onClick={raceAll}
           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
@@ -115,23 +130,21 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
           Reset Positions
         </button>
       </div>
-      <div>
-        {/* Pagination buttons */}
-        {Array.from({ length: Math.ceil(cars.length / carsPerPage) }).map(
-          (_, index) => (
-            <button key={index} onClick={() => paginate(index + 1)}>
-              {index + 1}
-            </button>
-          )
-        )}
-      </div>
+
       <div>
         {currentCars.map((car) => (
           <div key={car.id} className="flex items-center mb-4">
             {/* Car Select and Remove Button */}
             <div className="flex flex-col gap-1">
-              <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                Select
+              <button
+                className={`bg-${
+                  selectedCarId === car.id ? "green" : "red"
+                }-500 hover:bg-${
+                  selectedCarId === car.id ? "green" : "red"
+                }-600 text-white font-bold py-2 px-4 rounded`}
+                onClick={() => handleSelectCar(car.id)}
+              >
+                {selectedCarId === car.id ? "Selected" : "Select"}
               </button>
               <button
                 className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
@@ -144,8 +157,12 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
             <button
               className="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
               onClick={() =>
-                handleToggleEngine(car.id, car.engineStatus === "started")
+                handleToggleEngineWrapper(
+                  car.id,
+                  car.engineStatus === "started"
+                )
               }
+              disabled={car.engineStatus === "started"}
             >
               {car.engineStatus === "started" ? "Stop Engine" : "Start Engine"}
             </button>
@@ -156,8 +173,13 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
             >
               <motion.div
                 style={{ marginLeft: "10px" }}
-                initial={{ opacity: 0, x: 0 }}
-                animate={{ opacity: 1, x: carPositions[car.id]?.position || 0 }}
+                initial={{
+                  x:
+                    carPositions[car.id]?.position > 100
+                      ? carPositions[car.id]?.position
+                      : 0,
+                }}
+                animate={{ x: carPositions[car.id]?.position || 0 }}
                 transition={{ duration: carPositions[car.id]?.duration || 0.5 }}
               >
                 <SportsCarIcon color={car.color} />
@@ -168,6 +190,24 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
             </div>
           </div>
         ))}
+      </div>
+      <div className="flex space-x-2 mt-4 justify-center">
+        {/* Pagination buttons */}
+        {Array.from({ length: Math.ceil(cars.length / carsPerPage) }).map(
+          (_, index) => (
+            <button
+              key={index}
+              onClick={() => paginate(index + 1)}
+              className={`${
+                currentPage === index + 1
+                  ? "bg-blue-700"
+                  : "bg-blue-500 hover:bg-blue-700"
+              } text-white font-bold py-2 px-4 rounded`}
+            >
+              {index + 1}
+            </button>
+          )
+        )}
       </div>
     </div>
   );

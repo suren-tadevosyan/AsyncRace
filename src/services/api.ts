@@ -38,9 +38,12 @@ export const addRandomCars = async (count: number): Promise<Car[]> => {
 
 export const updateCar = async (
   id: number,
-  car: Partial<Car>
+  updatedCar: Partial<Car>
 ): Promise<Car> => {
-  const response = await axios.patch(`${API_BASE_URL}/garage/${id}`, car);
+  const response = await axios.patch(
+    `${API_BASE_URL}/garage/${id}`,
+    updatedCar
+  );
   return response.data;
 };
 
