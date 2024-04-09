@@ -1,27 +1,25 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { Car } from "../../types/types";
-import { deleteCar, updateCar, updateEngineStatus } from "../../services/api";
+import { deleteCar } from "../../services/api";
 
 import SportsCarIcon from "./CarIconSVG";
 import { motion } from "framer-motion";
 import { handleToggleEngine } from "../../utils/toggleEngine";
-import EditCarForm from "./UpdateCar";
 
 interface CarListProps {
   cars: Car[];
   updateCarsState: Dispatch<SetStateAction<Car[]>>;
+  handleSelectCar: (carId: number) => void;
 }
 interface CarPositions {
   [key: string]: { position: number; duration: number };
 }
 
-const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
+const CarList: React.FC<CarListProps> = ({
+  cars,
+  updateCarsState,
+  handleSelectCar,
+}) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
   const carsPerPage: number = 7;
@@ -59,19 +57,30 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
     updateCarsState(updatedCars);
   };
 
-  const resetPositions = () => {
+  const resetPositions = (carId?: number) => {
     const updatedPositions: CarPositions = {};
-    const updatedCars: Car[] = cars.map((car) => ({
-      ...car,
-      engineStatus:
-        car.engineStatus === "started" ? "stopped" : car.engineStatus,
-    }));
+    const updatedCars: Car[] = cars.map((car) => {
+      if (carId && car.id === carId) {
+        return {
+          ...car,
+          engineStatus: "stopped",
+        };
+      }
+      return car;
+    });
 
-    for (const car of cars) {
-      updatedPositions[car.id] = { position: 0, duration: 0 };
+    if (carId) {
+      updatedPositions[carId] = { position: 0, duration: 0 };
+    } else {
+      for (const car of cars) {
+        updatedPositions[car.id] = { position: 0, duration: 0 };
+      }
     }
 
-    setCarPositions(updatedPositions);
+    setCarPositions((prevPositions) => ({
+      ...prevPositions,
+      ...updatedPositions,
+    }));
     updateCarsState(updatedCars);
   };
 
@@ -92,30 +101,11 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
       )
     );
   };
-  const handleSelectCar = (carId: number) => {
-    setSelectedCarId(carId === selectedCarId ? null : carId);
-  };
-
-  const handleSubmit = async (carId: number, name: string, color: string) => {
-    try {
-      const updatedCar = await updateCar(carId, { name, color });
-      
-      const updatedCars = cars.map((car) => (car.id === updatedCar.id ? updatedCar : car));
-      updateCarsState(updatedCars);
-    } catch (error) {
-      console.error("Error updating car:", error);
-    }
-  };
 
   return (
-    <div>
+    <div className="flex flex-col justify-between h-1/2">
       <h2 className="text-lg font-bold mb-4">Car List</h2>
-      <EditCarForm
-        carId={selectedCarId || 0}
-        initialName={cars.find((car) => car.id === selectedCarId)?.name || ""}
-        initialColor={cars.find((car) => car.id === selectedCarId)?.color || ""}
-        onSubmit={handleSubmit}
-      />
+
       <div className="flex justify-center gap-10">
         <button
           onClick={raceAll}
@@ -124,7 +114,7 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
           Race All
         </button>
         <button
-          onClick={resetPositions}
+          onClick={() => resetPositions()}
           className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded ml-2"
         >
           Reset Positions
@@ -154,21 +144,30 @@ const CarList: React.FC<CarListProps> = ({ cars, updateCarsState }) => {
               </button>
             </div>
             {/* Car Start Button */}
-            <button
-              className="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-              onClick={() =>
-                handleToggleEngineWrapper(
-                  car.id,
-                  car.engineStatus === "started"
-                )
-              }
-              disabled={car.engineStatus === "started"}
-            >
-              {car.engineStatus === "started" ? "Stop Engine" : "Start Engine"}
-            </button>
+            <div className="flex flex-col gap-1">
+              {" "}
+              <button
+                className="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                onClick={() =>
+                  handleToggleEngineWrapper(
+                    car.id,
+                    car.engineStatus === "started"
+                  )
+                }
+                disabled={car.engineStatus === "started"}
+              >
+                {car.engineStatus === "started" ? "Stop" : "Start"}
+              </button>
+              <button
+                className="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                onClick={() => resetPositions(car.id)}
+              >
+                Reset
+              </button>
+            </div>
             {/* Car Icon */}
             <div
-              className="flex items-center bg-green-400  w-full mr-10"
+              className="flex items-center bg-gray-700  w-full "
               ref={carRef}
             >
               <motion.div
