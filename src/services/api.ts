@@ -1,6 +1,7 @@
 import axios from "axios";
-import { Car } from "../types/types";
+import { Car, Winner } from "../types/types";
 import getRandomCars from "../components/garage/GenerateCars";
+import { log } from "console";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -49,4 +50,24 @@ export const updateCar = async (
 
 export const deleteCar = async (id: number): Promise<void> => {
   await axios.delete(`${API_BASE_URL}/garage/${id}`);
+};
+
+export const updateWinner = async (
+  carId: number,
+  time: number
+): Promise<void> => {
+  const response = await axios.post(`${API_BASE_URL}/winners`, {
+    carId,
+    time,
+  });
+  console.log(response);
+
+  return response.data;
+};
+
+export const getWinners = async (): Promise<Car[]> => {
+  const response = await axios.get(`${API_BASE_URL}/winners`);
+  console.log(response.data);
+
+  return response.data;
 };

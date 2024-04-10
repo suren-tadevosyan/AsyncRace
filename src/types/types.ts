@@ -4,7 +4,13 @@ export interface Car {
   color: string;
   image: string;
   engineStatus: string;
-  velocity?: number; 
+  velocity?: number;
   distance?: number;
+  raceTime?: number;
 }
 
+export interface Winner {
+  id: number;
+  wins: number;
+  time: number;
+}

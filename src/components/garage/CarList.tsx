@@ -1,6 +1,12 @@
-import React, { Dispatch, SetStateAction, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Car } from "../../types/types";
-import { deleteCar } from "../../services/api";
+import { deleteCar, getWinners, updateWinner } from "../../services/api";
 
 import SportsCarIcon from "./CarIconSVG";
 import { motion } from "framer-motion";
@@ -35,6 +41,7 @@ const CarList: React.FC<CarListProps> = ({
   }>({});
   const carRef = useRef<HTMLDivElement>(null);
 
+  const [raceTimes, setRaceTimes] = useState<{ [carId: number]: number }>({});
   const handleToggleEngineWrapper = async (
     carId: number,
     isEngineOn: boolean
@@ -46,7 +53,9 @@ const CarList: React.FC<CarListProps> = ({
       carPositions,
       cars,
       updateCarsState,
-      setCarPositions
+      setCarPositions,
+      raceTimes,
+      setRaceTimes
     );
   };
 
@@ -101,6 +110,37 @@ const CarList: React.FC<CarListProps> = ({
       )
     );
   };
+
+  const raceCount: number[] = [];
+
+  useEffect(() => {
+    console.log(raceTimes);
+
+    const fastestCarId = Object.keys(raceTimes).reduce(
+      (fastestId: string | null, carId) => {
+        raceCount.push(1);
+        if (
+          !fastestId ||
+          raceTimes[parseInt(carId)] < raceTimes[parseInt(fastestId)]
+        )
+          return carId;
+        else return fastestId;
+      },
+      null
+    );
+    if (fastestCarId && raceCount.length >= 7) {
+      const time = raceTimes[parseInt(fastestCarId)];
+      updateWinner(parseInt(fastestCarId), time)
+        .then(() => console.log("Winner updated successfully"))
+        .catch((error) => console.error("Error updating winner:", error));
+      raceCount.length = 0;
+    }
+
+    getWinners();
+    console.log("Fastest Car:", fastestCarId);
+    console.log(currentCars.length);
+    console.log(raceCount.length);
+  }, [raceTimes]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">

@@ -1,4 +1,4 @@
-import { updateEngineStatus } from "../services/api";
+import { updateEngineStatus, } from "../services/api";
 import { RefObject, Dispatch, SetStateAction } from "react";
 import { Car } from "../types/types";
 
@@ -11,9 +11,12 @@ const handleToggleEngine = async (
   updateCarsState: Dispatch<SetStateAction<Car[]>>,
   setCarPositions: Dispatch<
     SetStateAction<{ [key: number]: { position: number; duration: number } }>
-  >
+  >,
+  raceTimes: { [key: number]: number },
+  setRaceTimes: Dispatch<SetStateAction<{ [key: number]: number }>>
 ): Promise<void> => {
   const newStatus = "started";
+
   const rawWidth = carRef.current
     ? carRef.current.getBoundingClientRect().width
     : 0;
@@ -35,7 +38,7 @@ const handleToggleEngine = async (
     const scalingFactor = 0.4;
     const animationDuration =
       (distance && distance * scalingFactor) / updatedVelocity;
-
+    const raceTime = parseFloat(animationDuration.toFixed(2));
     const newPosition = carPositions[carId]
       ? carPositions[carId].position + (distance || 0)
       : distance || 0;
@@ -47,6 +50,15 @@ const handleToggleEngine = async (
         duration: animationDuration || 0,
       },
     }));
+
+    await setRaceTimes((prevRaceTimes) => {
+      const updatedRaceTimes: { [key: number]: number } = {
+        ...prevRaceTimes,
+        [carId]: raceTime,
+      };
+
+      return updatedRaceTimes;
+    });
   } else {
     delete carPositions[carId];
   }
