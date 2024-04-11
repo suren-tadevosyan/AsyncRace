@@ -139,7 +139,9 @@ const CarList: React.FC<CarListProps> = ({
   useEffect(() => {
     const fastestCarId = Object.keys(raceTimes).reduce(
       (fastestId: string | null, carId) => {
-        setRaceCount((prevRaceCount) => [...prevRaceCount, 1]);
+        if (raceCount.length < currentCars.length) {
+          setRaceCount((prevRaceCount) => [...prevRaceCount, 1]);
+        }
         if (
           !fastestId ||
           raceTimes[parseInt(carId)] < raceTimes[parseInt(fastestId)]
@@ -165,7 +167,7 @@ const CarList: React.FC<CarListProps> = ({
 
     getWinners();
     console.log("Fastest Car:", fastestCarId);
-  }, [raceTimes, currentCars.length]);
+  }, [raceTimes, currentCars.length, raceCount]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">
