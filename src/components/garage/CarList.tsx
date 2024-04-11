@@ -34,7 +34,7 @@ const CarList: React.FC<CarListProps> = ({
   selectedCarId,
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const carsPerPage: number = 7;
+  const carsPerPage: number = 5;
   const indexOfLastCar: number = currentPage * carsPerPage;
   const indexOfFirstCar: number = indexOfLastCar - carsPerPage;
   const currentCars: Car[] = cars.slice(indexOfFirstCar, indexOfLastCar);
@@ -134,13 +134,14 @@ const CarList: React.FC<CarListProps> = ({
     );
   };
 
-  const [raceCount, setRaceCount] = useState<number[]>([]);
-
+  const [isWinnerDetermined, setIsWinnerDetermined] = useState(false);
   useEffect(() => {
+    const raceCount: number[] = [];
+
     const fastestCarId = Object.keys(raceTimes).reduce(
       (fastestId: string | null, carId) => {
         if (raceCount.length < currentCars.length) {
-          setRaceCount((prevRaceCount) => [...prevRaceCount, 1]);
+          raceCount.push(1);
         }
         if (
           !fastestId ||
@@ -152,22 +153,28 @@ const CarList: React.FC<CarListProps> = ({
 
       null
     );
-    if (fastestCarId && raceCount.length >= currentCars.length) {
+    if (
+      fastestCarId &&
+      raceCount.length >= currentCars.length &&
+      !isWinnerDetermined
+    ) {
       const time = raceTimes[parseInt(fastestCarId)];
+      console.log("hello");
+      console.log(raceCount);
+
       updateWinner(parseInt(fastestCarId), time)
         .then(() => {
           console.log("Winner updated successfully", time);
-
           openModal(fastestCarId, time);
+          setIsWinnerDetermined(true);
+          raceCount.length = 0;
         })
         .catch((error) => console.error("Error updating winner:", error));
-      raceCount.length = 0;
-      console.log(raceCount);
     }
 
     getWinners();
     console.log("Fastest Car:", fastestCarId);
-  }, [raceTimes, currentCars.length, raceCount]);
+  }, [raceTimes, currentCars.length, isWinnerDetermined]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">

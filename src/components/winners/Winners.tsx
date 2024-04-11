@@ -41,7 +41,9 @@ const WinnersView: React.FC = () => {
 
   const fetchWinners = async () => {
     try {
-      const response = await axios.get<Winner[]>("http://localhost:3000/winners");
+      const response = await axios.get<Winner[]>(
+        "http://localhost:3000/winners"
+      );
       const sortedWinners = response.data.sort((a, b) => b.wins - a.wins);
       setWinners(sortedWinners);
     } catch (error) {
@@ -98,10 +100,19 @@ const WinnersView: React.FC = () => {
             </tbody>
           </table>
           {/* Pagination controls */}
-          <ul className="pagination">
-            {Array.from({ length: Math.ceil(winners.length / itemsPerPage) }).map((_, index) => (
+          <ul className="flex space-x-2 mt-4 justify-center">
+            {Array.from({
+              length: Math.ceil(winners.length / itemsPerPage),
+            }).map((_, index) => (
               <li key={index} className="page-item">
-                <button onClick={() => paginate(index + 1)} className="page-link">
+                <button
+                  onClick={() => paginate(index + 1)}
+                  className={`${
+                    currentPage === index + 1
+                      ? "bg-blue-700"
+                      : "bg-blue-500 hover:bg-blue-700"
+                  } text-white font-bold py-2 px-4 rounded`}
+                >
                   {index + 1}
                 </button>
               </li>
