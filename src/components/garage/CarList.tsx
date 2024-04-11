@@ -12,10 +12,16 @@ import SportsCarIcon from "./CarIconSVG";
 import { motion } from "framer-motion";
 import { handleToggleEngine } from "../../utils/toggleEngine";
 
+interface FastestCarInfo {
+  carId: number;
+  time: number;
+}
+
 interface CarListProps {
   cars: Car[];
   updateCarsState: Dispatch<SetStateAction<Car[]>>;
   handleSelectCar: (carId: number) => void;
+  selectedCarId: number | null;
 }
 interface CarPositions {
   [key: string]: { position: number; duration: number };
@@ -25,16 +31,27 @@ const CarList: React.FC<CarListProps> = ({
   cars,
   updateCarsState,
   handleSelectCar,
+  selectedCarId,
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
   const carsPerPage: number = 7;
-
   const indexOfLastCar: number = currentPage * carsPerPage;
   const indexOfFirstCar: number = indexOfLastCar - carsPerPage;
   const currentCars: Car[] = cars.slice(indexOfFirstCar, indexOfLastCar);
-
   const paginate = (pageNumber: number): void => setCurrentPage(pageNumber);
+  const [positionsReset, setPositionsReset] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [fastestCarInfo, setFastestCarInfo] = useState<FastestCarInfo | null>(
+    null
+  );
+
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
 
   const [carPositions, setCarPositions] = useState<{
     [key: number]: { position: number; duration: number };
@@ -91,9 +108,11 @@ const CarList: React.FC<CarListProps> = ({
       ...updatedPositions,
     }));
     updateCarsState(updatedCars);
+    setPositionsReset(true);
   };
 
   const raceAll = async () => {
+    setPositionsReset(false);
     const startEnginePromises = [];
     const updatedCars: Car[] = [];
 
@@ -114,8 +133,6 @@ const CarList: React.FC<CarListProps> = ({
   const raceCount: number[] = [];
 
   useEffect(() => {
-    console.log(raceTimes);
-
     const fastestCarId = Object.keys(raceTimes).reduce(
       (fastestId: string | null, carId) => {
         raceCount.push(1);
@@ -126,36 +143,41 @@ const CarList: React.FC<CarListProps> = ({
           return carId;
         else return fastestId;
       },
+
       null
     );
-    if (fastestCarId && raceCount.length >= 7) {
+    if (fastestCarId && raceCount.length >= currentCars.length) {
       const time = raceTimes[parseInt(fastestCarId)];
       updateWinner(parseInt(fastestCarId), time)
-        .then(() => console.log("Winner updated successfully"))
+        .then(() => {
+          console.log("Winner updated successfully", time);
+          setFastestCarInfo({
+            carId: parseInt(fastestCarId),
+            time: time,
+          });
+          openModal(); // Open modal when winner is updated
+        })
         .catch((error) => console.error("Error updating winner:", error));
       raceCount.length = 0;
     }
 
     getWinners();
     console.log("Fastest Car:", fastestCarId);
-    console.log(currentCars.length);
-    console.log(raceCount.length);
   }, [raceTimes]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">
-      <h2 className="text-lg font-bold mb-4">Car List</h2>
-
-      <div className="flex justify-center gap-10">
+      <div className="flex  gap-10 mb-5">
         <button
           onClick={raceAll}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          disabled={!positionsReset}
+          className="px-8 py-4 rounded-lg text-white font-bold border border-green-500 hover:bg-green-500"
         >
           Race All
         </button>
         <button
           onClick={() => resetPositions()}
-          className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded ml-2"
+          className="px-8 py-4 rounded-lg text-white font-bold border border-purple-500 hover:bg-purple-500"
         >
           Reset Positions
         </button>
@@ -163,15 +185,14 @@ const CarList: React.FC<CarListProps> = ({
 
       <div>
         {currentCars.map((car) => (
-          <div key={car.id} className="flex items-center mb-4">
-            {/* Car Select and Remove Button */}
-            <div className="flex flex-col gap-1">
+          <div key={car.id} className="flex  mb-4">
+            <div className="flex flex-col gap-1 ">
               <button
                 className={`bg-${
                   selectedCarId === car.id ? "green" : "red"
                 }-500 hover:bg-${
                   selectedCarId === car.id ? "green" : "red"
-                }-600 text-white font-bold py-2 px-4 rounded`}
+                }-600 text-white font-bold py-2  rounded`}
                 onClick={() => handleSelectCar(car.id)}
               >
                 {selectedCarId === car.id ? "Selected" : "Select"}
@@ -184,7 +205,7 @@ const CarList: React.FC<CarListProps> = ({
               </button>
             </div>
             {/* Car Start Button */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 mr-4">
               {" "}
               <button
                 className="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
@@ -207,7 +228,7 @@ const CarList: React.FC<CarListProps> = ({
             </div>
             {/* Car Icon */}
             <div
-              className="flex items-center bg-gray-700  w-full "
+              className="flex items-center  w-full border-t-[8px] border-b-[8px]  border-white"
               ref={carRef}
             >
               <motion.div
@@ -225,7 +246,7 @@ const CarList: React.FC<CarListProps> = ({
               </motion.div>
 
               {/* Car Name */}
-              <p className="ml-2">{car.name}</p>
+              <p className="ml-2 text-white text-2xl">{car.name}</p>
             </div>
           </div>
         ))}
@@ -248,6 +269,21 @@ const CarList: React.FC<CarListProps> = ({
           )
         )}
       </div>
+      {showModal && fastestCarInfo && (
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Fastest Car</h2>
+            <p>Car ID: {fastestCarInfo.carId}</p>
+            <p>Time: {fastestCarInfo.time}</p>
+            <button
+              onClick={closeModal}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

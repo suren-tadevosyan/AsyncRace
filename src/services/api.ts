@@ -1,7 +1,6 @@
 import axios from "axios";
-import { Car, Winner } from "../types/types";
+import { Car } from "../types/types";
 import getRandomCars from "../components/garage/GenerateCars";
-import { log } from "console";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -32,11 +31,17 @@ export const addCar = async (newCar: Partial<Car>): Promise<Car> => {
 };
 
 export const addRandomCars = async (count: number): Promise<Car[]> => {
-  const randomCars = getRandomCars(count);
-  const promises = randomCars.map((car) => addCar(car));
-  return Promise.all(promises);
-};
+  try {
+    const randomCars = getRandomCars(count);
+    console.log(randomCars);
 
+    const promises = randomCars.map((car) => addCar(car));
+    return Promise.all(promises);
+  } catch (error) {
+    console.error("Error adding random cars:", error);
+    throw error;
+  }
+};
 export const updateCar = async (
   id: number,
   updatedCar: Partial<Car>
@@ -56,18 +61,32 @@ export const updateWinner = async (
   carId: number,
   time: number
 ): Promise<void> => {
-  const response = await axios.post(`${API_BASE_URL}/winners`, {
-    carId,
-    time,
-  });
-  console.log(response);
+  try {
+    const winners = await getWinners();
+    const existingWinner = winners.find((winner: Car) => winner.id === carId);
 
-  return response.data;
+    if (existingWinner) {
+      await axios.put(`${API_BASE_URL}/winners/${carId}`, {
+        carId,
+        time,
+        wins: (existingWinner.wins ?? 0) + 1,
+      });
+    } else {
+      await axios.post(`${API_BASE_URL}/winners`, {
+        carId,
+        time,
+        wins: 1,
+      });
+    }
+
+    console.log("Winner updated successfully");
+  } catch (error) {
+    console.error("Error updating winner:", error);
+  }
 };
 
 export const getWinners = async (): Promise<Car[]> => {
   const response = await axios.get(`${API_BASE_URL}/winners`);
-  console.log(response.data);
 
   return response.data;
 };

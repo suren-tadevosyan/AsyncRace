@@ -1,4 +1,4 @@
-import { Car,} from "../../types/types";
+import { Car } from "../../types/types";
 
 const brands: string[] = [
   "Aston Martin",
@@ -86,10 +86,10 @@ const getRandomCars = (count = 100): Car[] =>
   Array(count)
     .fill(null)
     .map((_, index) => ({
-      id: index + 1, 
+      id: index + 5,
       name: getRandomCarName(),
       color: getRandomColor(),
-      image: "", 
+      image: "",
       engineStatus: "",
     }));
 

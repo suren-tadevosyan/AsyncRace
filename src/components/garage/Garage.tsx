@@ -34,8 +34,9 @@ const GarageView: React.FC = () => {
 
   const handleAddRandomCars = async () => {
     try {
-      const randomCars = await addRandomCars(100);
+      const randomCars = await addRandomCars(10);
       setCars([...cars, ...randomCars]);
+
       console.log("Random cars added:", randomCars);
     } catch (error) {
       console.error("Error adding random cars:", error);
@@ -63,7 +64,7 @@ const GarageView: React.FC = () => {
   };
 
   return (
-    <div className=" min-h-screen h-full flex flex-col mx-10">
+    <div className="  flex flex-col mx-10">
       <div className="flex justify-between">
         <AddCarForm onSubmit={handleSubmit} />
         <EditCarForm
@@ -89,6 +90,7 @@ const GarageView: React.FC = () => {
           cars={cars}
           updateCarsState={setCars}
           handleSelectCar={handleSelectCar}
+          selectedCarId={selectedCarId}
         />
       </div>
     </div>

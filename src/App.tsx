@@ -1,18 +1,28 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GarageView from "./components/garage/Garage";
 import WinnersView from "./components/winners/Winners";
 
 function App() {
-  const [showWinnersView, setShowWinnersView] = useState(false);
+  const [showWinnersView, setShowWinnersView] = useState(
+    localStorage.getItem("showWinnersView") === "true"
+  );
 
   const showGarage = () => {
     setShowWinnersView(false);
+
+    localStorage.setItem("showWinnersView", "false");
   };
 
   const showWinners = () => {
     setShowWinnersView(true);
+
+    localStorage.setItem("showWinnersView", "true");
   };
+
+  useEffect(() => {
+    return () => localStorage.removeItem("showWinnersView");
+  }, []);
 
   return (
     <div className="App">
@@ -23,7 +33,7 @@ function App() {
               onClick={showGarage}
               className={`px-8 py-4 rounded-lg font-bold w-[200px] ${
                 !showWinnersView ? " text-white" : " text-gray-700"
-              } border border-green-500`}
+              } border border-green-500 hover:bg-green-500`}
             >
               Garage
             </button>
@@ -33,7 +43,7 @@ function App() {
               onClick={showWinners}
               className={`px-8 py-4 rounded-lg font-bold w-[200px] ${
                 showWinnersView ? " text-white" : " text-gray-700"
-              } border border-purple-500`}
+              } border border-purple-500 hover:bg-purple-500`}
             >
               Winners
             </button>

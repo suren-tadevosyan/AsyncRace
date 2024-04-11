@@ -7,6 +7,7 @@ export interface Car {
   velocity?: number;
   distance?: number;
   raceTime?: number;
+  wins?: number;
 }
 
 export interface Winner {
