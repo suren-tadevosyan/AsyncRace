@@ -45,7 +45,11 @@ const CarList: React.FC<CarListProps> = ({
     null
   );
 
-  const openModal = () => {
+  const openModal = (fastestCarId: string, time: number) => {
+    setFastestCarInfo({
+      carId: parseInt(fastestCarId),
+      time: time,
+    });
     setShowModal(true);
   };
 
@@ -130,12 +134,12 @@ const CarList: React.FC<CarListProps> = ({
     );
   };
 
-  const raceCount: number[] = [];
+  const [raceCount, setRaceCount] = useState<number[]>([]);
 
   useEffect(() => {
     const fastestCarId = Object.keys(raceTimes).reduce(
       (fastestId: string | null, carId) => {
-        raceCount.push(1);
+        setRaceCount((prevRaceCount) => [...prevRaceCount, 1]);
         if (
           !fastestId ||
           raceTimes[parseInt(carId)] < raceTimes[parseInt(fastestId)]
@@ -151,19 +155,17 @@ const CarList: React.FC<CarListProps> = ({
       updateWinner(parseInt(fastestCarId), time)
         .then(() => {
           console.log("Winner updated successfully", time);
-          setFastestCarInfo({
-            carId: parseInt(fastestCarId),
-            time: time,
-          });
-          openModal(); // Open modal when winner is updated
+
+          openModal(fastestCarId, time);
         })
         .catch((error) => console.error("Error updating winner:", error));
       raceCount.length = 0;
+      console.log(raceCount);
     }
 
     getWinners();
     console.log("Fastest Car:", fastestCarId);
-  }, [raceTimes]);
+  }, [raceTimes, currentCars.length]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">

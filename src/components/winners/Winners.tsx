@@ -4,7 +4,10 @@ import { getCars } from "../../services/api";
 import SportsCarIcon from "../garage/CarIconSVG";
 
 interface Winner {
+  id: number;
+  carId: number;
   wins: number;
+  time: string;
 }
 interface Car {
   id: number;
@@ -13,8 +16,11 @@ interface Car {
 }
 
 const WinnersView: React.FC = () => {
-  const [winners, setWinners] = useState<any[]>([]);
+  const [winners, setWinners] = useState<Winner[]>([]);
   const [garage, setGarage] = useState<Car[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
+
   useEffect(() => {
     fetchWinners();
     fetchGarage();
@@ -35,17 +41,19 @@ const WinnersView: React.FC = () => {
 
   const fetchWinners = async () => {
     try {
-      const response = await axios.get<Winner[]>(
-        "http://localhost:3000/winners"
-      );
-      const sortedWinners = response.data.sort(
-        (a: Winner, b: Winner) => b.wins - a.wins
-      );
+      const response = await axios.get<Winner[]>("http://localhost:3000/winners");
+      const sortedWinners = response.data.sort((a, b) => b.wins - a.wins);
       setWinners(sortedWinners);
     } catch (error) {
       console.error("Error fetching winners:", error);
     }
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = winners.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="h-full py-8">
@@ -65,7 +73,7 @@ const WinnersView: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {winners.map((winner) => {
+              {currentItems.map((winner) => {
                 const car = getCarDetails(winner.carId);
                 return (
                   <tr key={winner.id} className="bg-gray-700">
@@ -89,6 +97,16 @@ const WinnersView: React.FC = () => {
               })}
             </tbody>
           </table>
+          {/* Pagination controls */}
+          <ul className="pagination">
+            {Array.from({ length: Math.ceil(winners.length / itemsPerPage) }).map((_, index) => (
+              <li key={index} className="page-item">
+                <button onClick={() => paginate(index + 1)} className="page-link">
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
