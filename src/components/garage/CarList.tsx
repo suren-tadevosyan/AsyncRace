@@ -180,7 +180,7 @@ const CarList: React.FC<CarListProps> = ({
     }
 
     getWinners();
-  }, [raceTimes, currentCars.length, isWinnerDetermined]);
+  }, [raceTimes, currentCars.length, isWinnerDetermined, currentCars]);
 
   return (
     <div className="flex flex-col justify-between h-1/2">
