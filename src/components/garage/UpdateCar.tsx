@@ -35,6 +35,7 @@ const EditCarForm: React.FC<EditCarFormProps> = ({
             onChange={(event) => setName(event.target.value)}
             className="flex-grow px-3 py-2 rounded-lg border border-gray-600 bg-gray-700 text-white focus:outline-none focus:border-blue-500"
             required
+            placeholder="Enter car name"
           />
 
           <input

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Car } from "../../types/types";
 import { deleteCar, getWinners, updateWinner } from "../../services/api";
-
+import finishIMG from "../../images/finish.jpg";
 import SportsCarIcon from "./CarIconSVG";
 import { motion } from "framer-motion";
 import { handleToggleEngine } from "../../utils/toggleEngine";
@@ -15,6 +15,7 @@ import { handleToggleEngine } from "../../utils/toggleEngine";
 interface FastestCarInfo {
   carId: number;
   time: number;
+  name: string;
 }
 
 interface CarListProps {
@@ -44,11 +45,17 @@ const CarList: React.FC<CarListProps> = ({
   const [fastestCarInfo, setFastestCarInfo] = useState<FastestCarInfo | null>(
     null
   );
+  const [isWinnerDetermined, setIsWinnerDetermined] = useState(false);
 
-  const openModal = (fastestCarId: string, time: number) => {
+  const openModal = (
+    fastestCarId: string,
+    time: number,
+    fastestCarName: string
+  ) => {
     setFastestCarInfo({
       carId: parseInt(fastestCarId),
       time: time,
+      name: fastestCarName,
     });
     setShowModal(true);
   };
@@ -134,7 +141,6 @@ const CarList: React.FC<CarListProps> = ({
     );
   };
 
-  const [isWinnerDetermined, setIsWinnerDetermined] = useState(false);
   useEffect(() => {
     const raceCount: number[] = [];
 
@@ -159,13 +165,14 @@ const CarList: React.FC<CarListProps> = ({
       !isWinnerDetermined
     ) {
       const time = raceTimes[parseInt(fastestCarId)];
-      console.log("hello");
-      console.log(raceCount);
 
       updateWinner(parseInt(fastestCarId), time)
         .then(() => {
-          console.log("Winner updated successfully", time);
-          openModal(fastestCarId, time);
+          const fastestCar = currentCars.find(
+            (car) => car.id === parseInt(fastestCarId)
+          );
+
+          openModal(fastestCarId, time, fastestCar?.name ?? "Unknown");
           setIsWinnerDetermined(true);
           raceCount.length = 0;
         })
@@ -173,7 +180,6 @@ const CarList: React.FC<CarListProps> = ({
     }
 
     getWinners();
-    console.log("Fastest Car:", fastestCarId);
   }, [raceTimes, currentCars.length, isWinnerDetermined]);
 
   return (
@@ -239,7 +245,7 @@ const CarList: React.FC<CarListProps> = ({
             </div>
             {/* Car Icon */}
             <div
-              className="flex items-center  w-full border-t-[8px] border-b-[8px]  border-white"
+              className="flex items-center  w-full border-t-[8px] border-b-[8px]  border-white relative"
               ref={carRef}
             >
               <motion.div
@@ -258,6 +264,13 @@ const CarList: React.FC<CarListProps> = ({
 
               {/* Car Name */}
               <p className="ml-2 text-white text-2xl">{car.name}</p>
+              <div className="absolute right-[100px] flex items-center border-white">
+                <img
+                  src={finishIMG}
+                  alt=""
+                  style={{ maxWidth: "100px", height: "65px" }}
+                />
+              </div>
             </div>
           </div>
         ))}
@@ -282,10 +295,14 @@ const CarList: React.FC<CarListProps> = ({
       </div>
       {showModal && fastestCarInfo && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Fastest Car</h2>
-            <p>Car ID: {fastestCarInfo.carId}</p>
-            <p>Time: {fastestCarInfo.time}</p>
+          <div className="bg-gray-700 p-8 rounded-lg flex items-center flex-col">
+            <h2 className="text-2xl text-yellow-500 font-bold mb-4">
+              Winner Car
+            </h2>
+            <p className="text-2xl text-green-500">{fastestCarInfo.name}</p>
+            <p className="text-2xl text-green-500 mt-5">
+              Time: {fastestCarInfo.time}
+            </p>
             <button
               onClick={closeModal}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

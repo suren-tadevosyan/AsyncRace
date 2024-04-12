@@ -27,7 +27,7 @@ const AddCarForm: React.FC<AddCarFormProps> = ({ onSubmit }) => {
             id="name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="flex px-3 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+            className="flex px-3 py-2 rounded-lg border border-gray-600  bg-gray-700 focus:outline-none focus:border-blue-500"
             placeholder="Enter car name"
             required
           />

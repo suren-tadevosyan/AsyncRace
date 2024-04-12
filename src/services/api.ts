@@ -30,10 +30,15 @@ export const addCar = async (newCar: Partial<Car>): Promise<Car> => {
   return response.data;
 };
 
-export const addRandomCars = async (count: number): Promise<Car[]> => {
+export const addRandomCars = async (
+  count: number,
+  lastCarIndex: number
+): Promise<Car[]> => {
   try {
-    const randomCars = getRandomCars(count);
-    console.log(randomCars);
+    const randomCars = getRandomCars(count).map((car, index) => ({
+      ...car,
+      id: lastCarIndex + index + 1,
+    }));
 
     const promises = randomCars.map((car) => addCar(car));
     return Promise.all(promises);
@@ -78,8 +83,6 @@ export const updateWinner = async (
         wins: 1,
       });
     }
-
-    console.log("Winner updated successfully");
   } catch (error) {
     console.error("Error updating winner:", error);
   }

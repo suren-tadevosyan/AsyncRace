@@ -34,7 +34,8 @@ const GarageView: React.FC = () => {
 
   const handleAddRandomCars = async () => {
     try {
-      const randomCars = await addRandomCars(10);
+      const lastCarIndex = cars.length > 0 ? cars[cars.length - 1].id : 0;
+      const randomCars = await addRandomCars(50, lastCarIndex);
       setCars([...cars, ...randomCars]);
 
       console.log("Random cars added:", randomCars);
@@ -71,7 +72,7 @@ const GarageView: React.FC = () => {
           carId={selectedCarId || 0}
           initialName={cars.find((car) => car.id === selectedCarId)?.name || ""}
           initialColor={
-            cars.find((car) => car.id === selectedCarId)?.color || "#FFFFFF"
+            cars.find((car) => car.id === selectedCarId)?.color || "#000000"
           }
           onSubmit={handleSubmitEdit}
         />
@@ -81,7 +82,7 @@ const GarageView: React.FC = () => {
             onClick={handleAddRandomCars}
             className=" text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-300 border border-pink-600"
           >
-            Add 100 Random Cars
+            Add 50 Random Cars
           </button>
         </div>
       </div>
