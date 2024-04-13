@@ -42,7 +42,7 @@ const WinnersView: React.FC = () => {
   const fetchWinners = async () => {
     try {
       const response = await axios.get<Winner[]>(
-        "http://localhost:3000/winners"
+        "https://asyncrace-1.onrender.com/winners"
       );
       const sortedWinners = response.data.sort((a, b) => b.wins - a.wins);
       setWinners(sortedWinners);
