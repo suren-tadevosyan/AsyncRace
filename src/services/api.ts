@@ -2,7 +2,7 @@ import axios from "axios";
 import { Car } from "../types/types";
 import getRandomCars from "../components/garage/GenerateCars";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://asyncrace-1.onrender.com";
 
 export const getCars = async (): Promise<Car[]> => {
   const response = await axios.get(`${API_BASE_URL}/garage`);
