@@ -35,7 +35,7 @@ const GarageView: React.FC = () => {
   const handleAddRandomCars = async () => {
     try {
       const lastCarIndex = cars.length > 0 ? cars[cars.length - 1].id : 0;
-      const randomCars = await addRandomCars(50, lastCarIndex);
+      const randomCars = await addRandomCars(10, lastCarIndex);
       setCars([...cars, ...randomCars]);
 
       console.log("Random cars added:", randomCars);
@@ -82,7 +82,7 @@ const GarageView: React.FC = () => {
             onClick={handleAddRandomCars}
             className=" text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-300 border border-pink-600"
           >
-            Add 50 Random Cars
+            Add 10 Random Cars
           </button>
         </div>
       </div>
