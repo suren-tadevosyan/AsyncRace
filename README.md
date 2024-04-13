@@ -5,7 +5,7 @@ project is deployed on netlify node js server is deployed on render.com
 
 ## Performance Considerations
 
-Please note that the performance of the server deployed on reder.com may vary and could be slower compared to local or dedicated hosting environments. This could be due to several reasons, including but not limited to:
+Please note that the performance of the server deployed on render.com may vary and could be slower compared to local or dedicated hosting environments. This could be due to several reasons, including but not limited to:
 
 - **Shared Resources:** reder.com might host multiple applications on shared resources, leading to occasional performance fluctuations.
 - **Network Latency:** Users accessing the server from distant locations may experience increased latency due to network routing.
